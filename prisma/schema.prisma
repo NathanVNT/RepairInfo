@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle pour les utilisateurs
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  nom       String
+  role      String   // admin, technicien, gestionnaire_stock, gestionnaire_finance, client
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([email])
+}
+
+// Modèle pour les réparations
+model Reparation {
+  id                String                  @id @default(cuid())
+  ref               String                  @unique
+  client_id         String
+  client_name       String
+  appareil          String
+  marque            String?
+  modele            String?
+  numero_serie      String?
+  description_panne String
+  date_depot        DateTime                @default(now())
+  date_prevue       DateTime?
+  date_fin          DateTime?
+  statut            String                  @default("en_attente")
+  priorite          String                  @default("normale")
+  montant_estime    Float?
+  montant_final     Float?
+  technicien        String?
+  facture_id        String?
+  devis_id          String?
+  note_interne      String?
+  note_client       String?
+  notification_statut Boolean                @default(false)
+  notification_documents Boolean             @default(false)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  
+  // Relations
+  historique        ReparationHistorique[]
+  pieces_utilisees  PieceUtilisee[]
+  
+  @@index([client_id])
+  @@index([statut])
+  @@index([date_depot])
+}
+
+// Modèle pour l'historique des réparations
+model ReparationHistorique {
+  id             String     @id @default(cuid())
+  reparation_id  String
+  date           DateTime   @default(now())
+  action         String
+  description    String
+  auteur         String
+  visible_client Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  
+  // Relation
+  reparation     Reparation @relation(fields: [reparation_id], references: [id], onDelete: Cascade)
+  
+  @@index([reparation_id])
+}
+
+// Modèle pour les pièces utilisées
+model PieceUtilisee {
+  id             String     @id @default(cuid())
+  reparation_id  String
+  product_id     String
+  product_ref    String
+  product_label  String
+  quantite       Int
+  prix_unitaire  Float
+  total          Float
+  createdAt      DateTime   @default(now())
+  
+  // Relation
+  reparation     Reparation @relation(fields: [reparation_id], references: [id], onDelete: Cascade)
+  
+  @@index([reparation_id])
+}
