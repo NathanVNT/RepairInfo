@@ -10,7 +10,7 @@ import { SetupGuard } from '@/components/SetupGuard';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Atelier Informatique - Gestion',
+  title: 'Atelier Informatique',
   description: 'Application de gestion pour atelier informatique',
 };
 
