@@ -113,9 +113,12 @@ if ! id "$APP_USER" >/dev/null 2>&1; then
 fi
 
 echo "[3/5] Recuperation du code source..."
-# Allow root to run git in any directory regardless of ownership
-git config --global --add safe.directory "$APP_DIR"
+# Trust the target directory regardless of owner (required since git 2.35.2)
+git config --global --add safe.directory '*'
+
 if [[ -d "$APP_DIR/.git" ]]; then
+  # Fix ownership BEFORE git operations so root can operate freely
+  chown -R root:root "$APP_DIR"
   git -C "$APP_DIR" fetch --all --prune
   git -C "$APP_DIR" checkout "$BRANCH"
   git -C "$APP_DIR" pull --ff-only origin "$BRANCH"
