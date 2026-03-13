@@ -66,23 +66,44 @@ function DashboardContent() {
       setError(null);
 
       try {
-        const [reparationsRes, produitsRes, facturesRes, clientsRes] = await Promise.all([
-          fetch('/api/reparations?limit=1000'),
-          fetch('/api/produits?limit=1000'),
-          fetch('/api/factures?limit=1000'),
-          fetch('/api/clients?limit=1000'),
+        const fetchJson = async (url: string) => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            throw new Error(String(payload?.message || payload?.error || `Erreur ${response.status}`));
+          }
+          return response.json();
+        };
+
+        const [reparationsResult, produitsResult, facturesResult, clientsResult] = await Promise.allSettled([
+          fetchJson('/api/reparations?limit=1000'),
+          fetchJson('/api/produits?limit=1000'),
+          fetchJson('/api/factures?limit=1000'),
+          fetchJson('/api/clients?limit=1000'),
         ]);
 
-        if (!reparationsRes.ok || !produitsRes.ok || !facturesRes.ok || !clientsRes.ok) {
-          throw new Error('Impossible de charger les données du tableau de bord');
+        const reparations = reparationsResult.status === 'fulfilled' && Array.isArray(reparationsResult.value)
+          ? reparationsResult.value
+          : [];
+        const produits = produitsResult.status === 'fulfilled' && Array.isArray(produitsResult.value)
+          ? produitsResult.value
+          : [];
+        const factures = facturesResult.status === 'fulfilled' && Array.isArray(facturesResult.value)
+          ? facturesResult.value
+          : [];
+        const clients = clientsResult.status === 'fulfilled' && Array.isArray(clientsResult.value)
+          ? clientsResult.value
+          : [];
+
+        const failures: string[] = [];
+        if (reparationsResult.status === 'rejected') failures.push(`Reparations: ${reparationsResult.reason?.message || 'indisponible'}`);
+        if (produitsResult.status === 'rejected') failures.push(`Stock: ${produitsResult.reason?.message || 'indisponible'}`);
+        if (facturesResult.status === 'rejected') failures.push(`Factures: ${facturesResult.reason?.message || 'indisponible'}`);
+        if (clientsResult.status === 'rejected') failures.push(`Clients: ${clientsResult.reason?.message || 'indisponible'}`);
+
+        if (failures.length > 0) {
+          setError(`Certaines donnees n'ont pas pu etre chargees: ${failures.join(' | ')}`);
         }
-
-        const [reparations, produits, factures, clients] = await Promise.all([
-          reparationsRes.json(),
-          produitsRes.json(),
-          facturesRes.json(),
-          clientsRes.json(),
-        ]);
 
         // Réparations
         const reparationsEnCours = Array.isArray(reparations)

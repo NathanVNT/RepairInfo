@@ -6,6 +6,7 @@ import { TitleUpdater } from '@/components/TitleUpdater';
 import { AuthProvider } from '@/lib/auth-context';
 import { MainWrapper } from '@/components/MainWrapper';
 import { SetupGuard } from '@/components/SetupGuard';
+import { ToastProvider } from '@/components/ToastProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,12 +39,14 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 transition-colors duration-200`}>
         <AuthProvider>
-          <SetupGuard />
-          <TitleUpdater />
-          <MobileNav />
-          <MainWrapper>
-            {children}
-          </MainWrapper>
+          <ToastProvider>
+            <SetupGuard />
+            <TitleUpdater />
+            <MobileNav />
+            <MainWrapper>
+              {children}
+            </MainWrapper>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

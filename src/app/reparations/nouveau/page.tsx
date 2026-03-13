@@ -14,6 +14,7 @@ import { Button, Input, Select, Textarea, Card } from '@/components/ui';
 import { ScanButton } from '@/components/BarcodeScanner';
 import { reparationService } from '@/lib/reparation-service';
 import { DolibarrThirdParty } from '@/types';
+import axios from 'axios';
 
 export default function NewReparationPage() {
   const router = useRouter();
@@ -142,7 +143,10 @@ export default function NewReparationPage() {
       router.push(`/reparations/${newReparation.id}`);
     } catch (error) {
       console.error('Erreur lors de la création:', error);
-      alert('Erreur lors de la création de la réparation');
+      const message = axios.isAxiosError(error)
+        ? String(error.response?.data?.message || error.response?.data?.error || error.message)
+        : 'Erreur lors de la création de la réparation';
+      alert(message);
     } finally {
       setLoading(false);
     }
