@@ -94,7 +94,7 @@ apt_update_safe() {
 }
 
 run_as_app_user() {
-  sudo -u "$APP_USER" -H bash -lc "cd '$APP_DIR' && $*"
+  sudo -u "$APP_USER" -H env NPM_CONFIG_CACHE="/tmp/.npm-${APP_USER}" bash -lc "cd '$APP_DIR' && $*"
 }
 
 echo "[1/8] Installation des paquets systeme..."
@@ -117,6 +117,17 @@ if [[ "$NEED_NODE_INSTALL" == "1" ]]; then
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   apt-get install -y nodejs
 fi
+
+# Ensure APP_USER home directory exists (www-data may have /var/www as home)
+APP_HOME="$(getent passwd "$APP_USER" | cut -d: -f6)"
+if [[ -n "$APP_HOME" && ! -d "$APP_HOME" ]]; then
+  mkdir -p "$APP_HOME"
+  chown "$APP_USER":"$APP_USER" "$APP_HOME"
+  chmod 750 "$APP_HOME"
+  echo "Dossier home cree: $APP_HOME"
+fi
+mkdir -p "/tmp/.npm-${APP_USER}"
+chown "$APP_USER":"$APP_USER" "/tmp/.npm-${APP_USER}"
 
 echo "[3/8] Preparation fichier .env..."
 if [[ ! -f "$APP_DIR/.env" && -f "$APP_DIR/.env.local.example" ]]; then
