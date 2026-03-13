@@ -113,6 +113,8 @@ if ! id "$APP_USER" >/dev/null 2>&1; then
 fi
 
 echo "[3/5] Recuperation du code source..."
+# Allow root to run git in any directory regardless of ownership
+git config --global --add safe.directory "$APP_DIR"
 if [[ -d "$APP_DIR/.git" ]]; then
   git -C "$APP_DIR" fetch --all --prune
   git -C "$APP_DIR" checkout "$BRANCH"
