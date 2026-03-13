@@ -136,6 +136,13 @@ if [[ ! -f "$APP_DIR/.env" && -f "$APP_DIR/.env.local.example" ]]; then
   echo "Fichier .env cree depuis .env.local.example"
 fi
 
+# Replace localhost with the server's actual IP in NEXT_PUBLIC_APP_URL
+SERVER_IP="$(hostname -I | awk '{print $1}')"
+if [[ -n "$SERVER_IP" && -f "$APP_DIR/.env" ]]; then
+  sed -i "s|NEXT_PUBLIC_APP_URL=http://localhost|NEXT_PUBLIC_APP_URL=http://${SERVER_IP}|g" "$APP_DIR/.env"
+  echo "NEXT_PUBLIC_APP_URL mis a jour: http://${SERVER_IP}:${PORT}"
+fi
+
 echo "[4/8] Installation dependances npm..."
 run_as_app_user npm ci
 
@@ -173,4 +180,4 @@ echo "Installation terminee."
 echo "Service: $SERVICE_NAME"
 echo "Status : systemctl status $SERVICE_NAME"
 echo "Logs   : journalctl -u $SERVICE_NAME -f"
-echo "URL    : http://localhost:$PORT"
+echo "URL    : http://${SERVER_IP:-localhost}:$PORT"
