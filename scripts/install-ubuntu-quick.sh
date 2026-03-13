@@ -77,9 +77,34 @@ if [[ -z "$REPO_URL" ]]; then
   exit 1
 fi
 
+apt_update_safe() {
+  local attempt=1
+  local max_attempts=5
+
+  while [[ "$attempt" -le "$max_attempts" ]]; do
+    echo "apt-get update (tentative ${attempt}/${max_attempts})..."
+
+    if apt-get \
+      -o Acquire::Retries=5 \
+      -o Acquire::ForceIPv4=true \
+      -o Acquire::Languages=none \
+      update -y; then
+      return 0
+    fi
+
+    echo "Echec apt-get update, nettoyage cache listes puis nouvelle tentative..."
+    rm -rf /var/lib/apt/lists/*
+    sleep 3
+    attempt=$((attempt + 1))
+  done
+
+  echo "Impossible d'executer apt-get update apres ${max_attempts} tentatives."
+  return 1
+}
+
 echo "[1/5] Installation dependances systeme minimales..."
-apt-get update -y
-apt-get install -y git curl ca-certificates
+apt_update_safe
+apt-get -o Acquire::ForceIPv4=true install -y git curl ca-certificates
 
 echo "[2/5] Verification utilisateur Linux..."
 if ! id "$APP_USER" >/dev/null 2>&1; then
