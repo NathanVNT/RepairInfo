@@ -52,8 +52,8 @@ export class DolibarrAPI {
 
   // ===== ENTREPOTS (WAREHOUSES) =====
   
-  async getWarehouses() {
-    return this.get('/warehouses');
+  async getWarehouses(): Promise<any[]> {
+    return this.get('/warehouses') as Promise<any[]>;
   }
 
   async getWarehouse(id: string) {
