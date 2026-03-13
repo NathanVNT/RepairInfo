@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, Scan, Home, Package, Wrench, Users, BarChart3, FileText, Settings, LogOut } from 'lucide-react';
+import { Menu, X, Scan, Home, Package, Wrench, Users, BarChart3, FileText, Settings, LogOut, BookOpen } from 'lucide-react';
 import { Button } from './ui';
 import { BarcodeScanner } from './BarcodeScanner';
 import { ThemeToggle } from './ThemeToggle';
@@ -104,6 +104,15 @@ export function MobileNav() {
                   </div>
                 </div>
               )}
+              <a
+                href="https://wiki.repairinfo.nathanvernet.fr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                title="Documentation"
+              >
+                <BookOpen className="h-4 w-4" />
+              </a>
               <Link
                 href="/setup"
                 className="hidden sm:inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors"
@@ -195,6 +204,16 @@ export function MobileNav() {
                 </Link>
               ))}
               <div className="pt-4 border-t border-gray-200 dark:border-slate-700 space-y-2">
+                <a
+                  href="https://wiki.repairinfo.nathanvernet.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-900 dark:text-slate-100"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <BookOpen className="h-5 w-5 text-gray-600 dark:text-slate-300" />
+                  <span>Documentation</span>
+                </a>
                 <Link
                   href="/setup"
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-900 dark:text-slate-100"
