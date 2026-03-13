@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -19,7 +19,7 @@ interface ProposalLine {
   tva_tx: number;
 }
 
-export default function NewDevisPage() {
+function NewDevisPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reparationId = searchParams.get('reparationId');
@@ -453,5 +453,13 @@ export default function NewDevisPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function NewDevisPageWrapper() {
+  return (
+    <Suspense>
+      <NewDevisPage />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -20,7 +20,7 @@ interface InvoiceLine {
   tva_tx: number;
 }
 
-export default function NewFacturePage() {
+function NewFacturePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reparationId = searchParams.get('reparationId');
@@ -453,5 +453,13 @@ export default function NewFacturePage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function NewFacturePageWrapper() {
+  return (
+    <Suspense>
+      <NewFacturePage />
+    </Suspense>
   );
 }
