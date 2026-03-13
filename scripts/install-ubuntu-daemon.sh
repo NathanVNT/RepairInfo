@@ -136,6 +136,12 @@ if [[ ! -f "$APP_DIR/.env" && -f "$APP_DIR/.env.local.example" ]]; then
   echo "Fichier .env cree depuis .env.local.example"
 fi
 
+# Strip known placeholder values so SetupGuard redirects to /setup on first visit
+if [[ -f "$APP_DIR/.env" ]]; then
+  sed -i 's|^NEXT_PUBLIC_DOLIBARR_URL=http://votre-dolibarr\.com.*|NEXT_PUBLIC_DOLIBARR_URL=|' "$APP_DIR/.env"
+  sed -i 's|^NEXT_PUBLIC_DOLIBARR_API_KEY=votre_cle_api_dolibarr.*|NEXT_PUBLIC_DOLIBARR_API_KEY=|' "$APP_DIR/.env"
+fi
+
 # Replace localhost with the server's actual IP in NEXT_PUBLIC_APP_URL
 SERVER_IP="$(hostname -I | awk '{print $1}')"
 if [[ -n "$SERVER_IP" && -f "$APP_DIR/.env" ]]; then
