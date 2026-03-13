@@ -1,14 +1,16 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export class DolibarrAPI {
-  private client: AxiosInstance;
+  private client: AxiosInstance | null = null;
+  private configError: Error | null = null;
 
   constructor() {
     const baseURL = process.env.NEXT_PUBLIC_DOLIBARR_URL;
     const apiKey = process.env.NEXT_PUBLIC_DOLIBARR_API_KEY;
 
     if (!baseURL || !apiKey) {
-      throw new Error('Configuration Dolibarr manquante. Vérifiez vos variables d\'environnement.');
+      this.configError = new Error('Configuration Dolibarr manquante. Vérifiez vos variables d\'environnement.');
+      return;
     }
 
     this.client = axios.create({
@@ -29,24 +31,35 @@ export class DolibarrAPI {
     );
   }
 
+  private getClientOrThrow(): AxiosInstance {
+    if (!this.client) {
+      throw this.configError || new Error('Configuration Dolibarr manquante. Vérifiez vos variables d\'environnement.');
+    }
+    return this.client;
+  }
+
   // Méthodes génériques
   async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
-    const response = await this.client.get<T>(endpoint, { params });
+    const client = this.getClientOrThrow();
+    const response = await client.get<T>(endpoint, { params });
     return response.data;
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
-    const response = await this.client.post<T>(endpoint, data);
+    const client = this.getClientOrThrow();
+    const response = await client.post<T>(endpoint, data);
     return response.data;
   }
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
-    const response = await this.client.put<T>(endpoint, data);
+    const client = this.getClientOrThrow();
+    const response = await client.put<T>(endpoint, data);
     return response.data;
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    const response = await this.client.delete<T>(endpoint);
+    const client = this.getClientOrThrow();
+    const response = await client.delete<T>(endpoint);
     return response.data;
   }
 
