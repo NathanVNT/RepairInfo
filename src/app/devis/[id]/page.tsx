@@ -39,6 +39,7 @@ export default function DevisDetailPage() {
   const [devis, setDevis] = useState<DolibarrProposal | null>(null);
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
+  const [converting, setConverting] = useState(false);
 
   useEffect(() => {
     loadDevis();
@@ -90,6 +91,44 @@ export default function DevisDetailPage() {
     window.open(`${dolibarrUrl}/comm/propal/card.php?id=${devisId}`, '_blank');
   };
 
+  const handleConvertToInvoice = async () => {
+    if (!confirm('Transformer ce devis en facture ?')) {
+      return;
+    }
+
+    setConverting(true);
+    try {
+      const response = await fetch(`/api/devis/${devisId}/to-facture`, {
+        method: 'POST',
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        alert(`Erreur: ${data?.message || data?.error || 'Transformation impossible'}`);
+        return;
+      }
+
+      const invoiceId = String(data?.invoice_id || '').trim();
+      if (invoiceId) {
+        const message = data?.already_billed
+          ? 'Ce devis est deja facture. Ouverture de la facture existante.'
+          : 'Facture creee avec succes.';
+        alert(message);
+        router.push(`/factures/${invoiceId}`);
+        return;
+      }
+
+      alert('Facture creee avec succes.');
+      router.push('/factures');
+    } catch (error) {
+      console.error('Erreur transformation devis en facture:', error);
+      alert('Erreur lors de la transformation du devis en facture');
+    } finally {
+      setConverting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -135,6 +174,12 @@ export default function DevisDetailPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              {devis.statut !== '4' && (
+                <Button onClick={handleConvertToInvoice} disabled={converting}>
+                  <FileText className="h-5 w-5 mr-2" />
+                  {converting ? 'Transformation...' : 'Transformer en facture'}
+                </Button>
+              )}
               {devis.statut === '0' && (
                 <Button 
                   variant="success" 

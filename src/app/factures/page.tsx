@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { 
   FileText, 
   Plus, 
@@ -58,12 +59,20 @@ export default function Factures() {
 }
 
 function FacturesContent() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>('factures');
   const [factures, setFactures] = useState<DolibarrInvoice[]>([]);
   const [devis, setDevis] = useState<DolibarrProposal[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const requestedTab = searchParams.get('tab');
+    if (requestedTab === 'devis') {
+      setActiveTab('devis');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (activeTab === 'factures') {
