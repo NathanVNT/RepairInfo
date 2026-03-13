@@ -5,6 +5,13 @@ import { sendEmail } from '@/lib/email-service';
 import { getRuntimeConfig } from '@/lib/runtime-config';
 import { htmlToText, renderEmailTemplate } from '@/lib/email-templates';
 
+function normalizeNote(value: unknown): string {
+  return String(value ?? '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/\r\n/g, '\n')
+    .trim();
+}
+
 // POST /api/reparations/[id]/facture - Créer une facture Dolibarr depuis une réparation
 export async function POST(
   request: NextRequest,
@@ -34,8 +41,8 @@ export async function POST(
       socid: reparation.client_id,
       type: type,
       date: Math.floor(Date.now() / 1000),
-      note_public: `Réparation ${reparation.ref}\n${reparation.appareil} - ${reparation.marque || ''} ${reparation.modele || ''}`,
-      note_private: reparation.note_interne || '',
+      note_public: normalizeNote(`Réparation ${reparation.ref}\n${reparation.appareil} - ${reparation.marque || ''} ${reparation.modele || ''}`),
+      note_private: normalizeNote(reparation.note_interne || ''),
     };
 
     const invoice = await dolibarrAPI.createInvoice(invoiceData);
@@ -49,7 +56,7 @@ export async function POST(
     // Ajouter les lignes de facture
     // Ligne principale : Réparation
     await dolibarrAPI.addInvoiceLine(invoiceId, {
-      desc: `Réparation ${reparation.appareil}\n${reparation.description_panne}`,
+      desc: normalizeNote(`Réparation ${reparation.appareil}\n${reparation.description_panne}`),
       subprice: reparation.montant_final || reparation.montant_estime || 0,
       qty: 1,
       tva_tx: 20, // 20% TVA par défaut
@@ -60,7 +67,7 @@ export async function POST(
       for (const piece of reparation.pieces_utilisees) {
         await dolibarrAPI.addInvoiceLine(invoiceId, {
           fk_product: piece.product_id,
-          desc: piece.product_label,
+          desc: normalizeNote(piece.product_label),
           subprice: piece.prix_unitaire,
           qty: piece.quantite,
           tva_tx: 20,

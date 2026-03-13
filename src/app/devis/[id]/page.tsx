@@ -10,9 +10,11 @@ import {
   Calendar,
   Euro,
   Eye,
-  XCircle
+  XCircle,
+  Pencil,
+  Trash2
 } from 'lucide-react';
-import { Button, Card, Badge } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea } from '@/components/ui';
 import { DolibarrProposal } from '@/types';
 
 const statutLabels: Record<string, string> = {
@@ -40,6 +42,14 @@ export default function DevisDetailPage() {
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [showEditLineModal, setShowEditLineModal] = useState(false);
+  const [editingLineId, setEditingLineId] = useState<string>('');
+  const [editingLineDescription, setEditingLineDescription] = useState('');
+  const [editingLineQty, setEditingLineQty] = useState('1');
+  const [editingLinePrice, setEditingLinePrice] = useState('0');
+  const [editingLineVat, setEditingLineVat] = useState('20');
+  const [savingLine, setSavingLine] = useState(false);
+  const [deletingLineId, setDeletingLineId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDevis();
@@ -126,6 +136,72 @@ export default function DevisDetailPage() {
       alert('Erreur lors de la transformation du devis en facture');
     } finally {
       setConverting(false);
+    }
+  };
+
+  const openEditLineModal = (line: any) => {
+    if (!line?.id) return;
+    setEditingLineId(String(line.id));
+    setEditingLineDescription(String(line.description || line.product_label || ''));
+    setEditingLineQty(String(line.qty ?? 1));
+    setEditingLinePrice(String(line.subprice ?? 0));
+    setEditingLineVat(String(line.tva_tx ?? 20));
+    setShowEditLineModal(true);
+  };
+
+  const handleSaveLine = async () => {
+    if (!editingLineId) return;
+    setSavingLine(true);
+    try {
+      const payload = {
+        desc: editingLineDescription,
+        qty: Number(editingLineQty || '0'),
+        subprice: Number(editingLinePrice || '0'),
+        tva_tx: Number(editingLineVat || '0'),
+      };
+
+      const response = await fetch(`/api/devis/${devisId}/lines/${editingLineId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        alert(`Erreur: ${error?.message || error?.error || 'Modification impossible'}`);
+        return;
+      }
+
+      setShowEditLineModal(false);
+      await loadDevis();
+    } catch (error) {
+      console.error('Erreur modification ligne devis:', error);
+      alert('Erreur lors de la modification de la ligne');
+    } finally {
+      setSavingLine(false);
+    }
+  };
+
+  const handleDeleteLine = async (lineId: string) => {
+    if (!confirm('Supprimer cette ligne du devis ?')) return;
+    setDeletingLineId(lineId);
+    try {
+      const response = await fetch(`/api/devis/${devisId}/lines/${lineId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        alert(`Erreur: ${error?.message || error?.error || 'Suppression impossible'}`);
+        return;
+      }
+
+      await loadDevis();
+    } catch (error) {
+      console.error('Erreur suppression ligne devis:', error);
+      alert('Erreur lors de la suppression de la ligne');
+    } finally {
+      setDeletingLineId(null);
     }
   };
 
@@ -278,6 +354,11 @@ export default function DevisDetailPage() {
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                           Total HT
                         </th>
+                        {devis.statut === '0' && (
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                            Actions
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -298,6 +379,27 @@ export default function DevisDetailPage() {
                           <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
                             {(parseFloat(line.total_ht as any) || 0).toFixed(2)} €
                           </td>
+                          {devis.statut === '0' && (
+                            <td className="px-4 py-3 text-right">
+                              <div className="inline-flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditLineModal(line)}
+                                  className="inline-flex items-center rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteLine(String(line.id || ''))}
+                                  disabled={!line.id || deletingLineId === String(line.id)}
+                                  className="inline-flex items-center rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -348,6 +450,57 @@ export default function DevisDetailPage() {
           </div>
         </div>
       </main>
+
+      <Modal
+        isOpen={showEditLineModal}
+        onClose={() => !savingLine && setShowEditLineModal(false)}
+        title="Modifier la ligne du devis"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowEditLineModal(false)} disabled={savingLine}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveLine} disabled={savingLine}>
+              {savingLine ? 'Sauvegarde...' : 'Sauvegarder'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Textarea
+            label="Description"
+            rows={4}
+            value={editingLineDescription}
+            onChange={(e) => setEditingLineDescription(e.target.value)}
+          />
+          <div className="grid grid-cols-3 gap-3">
+            <Input
+              label="Qte"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={editingLineQty}
+              onChange={(e) => setEditingLineQty(e.target.value)}
+            />
+            <Input
+              label="Prix HT"
+              type="number"
+              min="0"
+              step="0.01"
+              value={editingLinePrice}
+              onChange={(e) => setEditingLinePrice(e.target.value)}
+            />
+            <Input
+              label="TVA %"
+              type="number"
+              min="0"
+              step="0.01"
+              value={editingLineVat}
+              onChange={(e) => setEditingLineVat(e.target.value)}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

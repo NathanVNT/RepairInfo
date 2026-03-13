@@ -13,10 +13,15 @@ import {
   Download,
   Eye,
   CreditCard,
-  Trash2
+  Trash2,
+  Pencil
 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea } from '@/components/ui';
 import { DolibarrInvoice } from '@/types';
+
+function normalizeDisplayNote(value: unknown): string {
+  return String(value ?? '').replace(/<br\s*\/?>/gi, '\n');
+}
 
 const statutLabels: Record<string, string> = {
   '0': 'Brouillon',
@@ -54,6 +59,18 @@ export default function FactureDetailPage() {
   const [paying, setPaying] = useState(false);
   const [validating, setValidating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editPublicNote, setEditPublicNote] = useState('');
+  const [editPrivateNote, setEditPrivateNote] = useState('');
+  const [showEditLineModal, setShowEditLineModal] = useState(false);
+  const [editingLineId, setEditingLineId] = useState('');
+  const [editingLineDescription, setEditingLineDescription] = useState('');
+  const [editingLineQty, setEditingLineQty] = useState('1');
+  const [editingLinePrice, setEditingLinePrice] = useState('0');
+  const [editingLineVat, setEditingLineVat] = useState('20');
+  const [savingLine, setSavingLine] = useState(false);
+  const [deletingLineId, setDeletingLineId] = useState<string | null>(null);
 
   useEffect(() => {
     loadFacture();
@@ -196,6 +213,109 @@ export default function FactureDetailPage() {
     window.open(`${dolibarrUrl}/compta/facture/card.php?id=${factureId}`, '_blank');
   };
 
+  const openEditModal = () => {
+    setEditPublicNote(normalizeDisplayNote(facture?.note_public || ''));
+    setEditPrivateNote(normalizeDisplayNote(facture?.note_private || ''));
+    setShowEditModal(true);
+  };
+
+  const handleSaveDraftEdits = async () => {
+    setSavingEdit(true);
+    try {
+      const response = await fetch(`/api/factures/${factureId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          note_public: editPublicNote,
+          note_private: editPrivateNote,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        alert(`Erreur: ${error?.message || error?.error || 'Mise a jour impossible'}`);
+        return;
+      }
+
+      setShowEditModal(false);
+      await loadFacture();
+      alert('Facture provisoire mise a jour.');
+    } catch (error) {
+      console.error('Erreur mise a jour facture:', error);
+      alert('Erreur lors de la mise a jour de la facture');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const openEditLineModal = (line: any) => {
+    if (!line?.id) return;
+    setEditingLineId(String(line.id));
+    setEditingLineDescription(String(line.description || line.product_label || ''));
+    setEditingLineQty(String(line.qty ?? 1));
+    setEditingLinePrice(String(line.subprice ?? 0));
+    setEditingLineVat(String(line.tva_tx ?? 20));
+    setShowEditLineModal(true);
+  };
+
+  const handleSaveLine = async () => {
+    if (!editingLineId) return;
+    setSavingLine(true);
+    try {
+      const payload = {
+        desc: editingLineDescription,
+        qty: Number(editingLineQty || '0'),
+        subprice: Number(editingLinePrice || '0'),
+        tva_tx: Number(editingLineVat || '0'),
+      };
+
+      const response = await fetch(`/api/factures/${factureId}/lines/${editingLineId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        alert(`Erreur: ${error?.message || error?.error || 'Modification impossible'}`);
+        return;
+      }
+
+      setShowEditLineModal(false);
+      await loadFacture();
+    } catch (error) {
+      console.error('Erreur modification ligne facture:', error);
+      alert('Erreur lors de la modification de la ligne');
+    } finally {
+      setSavingLine(false);
+    }
+  };
+
+  const handleDeleteLine = async (lineId: string) => {
+    if (!confirm('Supprimer cette ligne de la facture ?')) return;
+    setDeletingLineId(lineId);
+    try {
+      const response = await fetch(`/api/factures/${factureId}/lines/${lineId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        alert(`Erreur: ${error?.message || error?.error || 'Suppression impossible'}`);
+        return;
+      }
+
+      await loadFacture();
+    } catch (error) {
+      console.error('Erreur suppression ligne facture:', error);
+      alert('Erreur lors de la suppression de la ligne');
+    } finally {
+      setDeletingLineId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -242,6 +362,10 @@ export default function FactureDetailPage() {
             <div className="flex gap-2">
               {facture.statut === '0' && (
                 <>
+                  <Button variant="secondary" onClick={openEditModal}>
+                    <FileText className="h-5 w-5 mr-2" />
+                    Modifier
+                  </Button>
                   <Button 
                     variant="success" 
                     onClick={handleValidate}
@@ -317,14 +441,14 @@ export default function FactureDetailPage() {
               {facture.note_public && (
                 <div className="mt-4 pt-4 border-t">
                   <p className="text-sm text-gray-600 mb-2">Note publique</p>
-                  <p className="text-gray-900 whitespace-pre-wrap">{facture.note_public}</p>
+                  <p className="text-gray-900 whitespace-pre-wrap">{normalizeDisplayNote(facture.note_public)}</p>
                 </div>
               )}
 
               {facture.note_private && (
                 <div className="mt-4 pt-4 border-t">
                   <p className="text-sm text-gray-600 mb-2">Note privée</p>
-                  <p className="text-gray-900 whitespace-pre-wrap">{facture.note_private}</p>
+                  <p className="text-gray-900 whitespace-pre-wrap">{normalizeDisplayNote(facture.note_private)}</p>
                 </div>
               )}
             </Card>
@@ -353,6 +477,11 @@ export default function FactureDetailPage() {
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                           Total HT
                         </th>
+                        {facture.statut === '0' && (
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                            Actions
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -373,6 +502,27 @@ export default function FactureDetailPage() {
                           <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
                             {(parseFloat(line.total_ht as any) || 0).toFixed(2)} €
                           </td>
+                          {facture.statut === '0' && (
+                            <td className="px-4 py-3 text-right">
+                              <div className="inline-flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditLineModal(line)}
+                                  className="inline-flex items-center rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteLine(String(line.id || ''))}
+                                  disabled={!line.id || deletingLineId === String(line.id)}
+                                  className="inline-flex items-center rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -415,6 +565,94 @@ export default function FactureDetailPage() {
           </div>
         </div>
       </main>
+
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => !savingEdit && setShowEditModal(false)}
+        title="Modifier la facture provisoire"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setShowEditModal(false)}
+              disabled={savingEdit}
+            >
+              Annuler
+            </Button>
+            <Button onClick={handleSaveDraftEdits} disabled={savingEdit}>
+              {savingEdit ? 'Sauvegarde...' : 'Sauvegarder'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Textarea
+            label="Note publique"
+            value={editPublicNote}
+            onChange={(e) => setEditPublicNote(e.target.value)}
+            rows={5}
+            placeholder="Visible sur la facture"
+          />
+          <Textarea
+            label="Note privee"
+            value={editPrivateNote}
+            onChange={(e) => setEditPrivateNote(e.target.value)}
+            rows={5}
+            placeholder="Note interne"
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showEditLineModal}
+        onClose={() => !savingLine && setShowEditLineModal(false)}
+        title="Modifier la ligne de facture"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowEditLineModal(false)} disabled={savingLine}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveLine} disabled={savingLine}>
+              {savingLine ? 'Sauvegarde...' : 'Sauvegarder'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Textarea
+            label="Description"
+            rows={4}
+            value={editingLineDescription}
+            onChange={(e) => setEditingLineDescription(e.target.value)}
+          />
+          <div className="grid grid-cols-3 gap-3">
+            <Input
+              label="Qte"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={editingLineQty}
+              onChange={(e) => setEditingLineQty(e.target.value)}
+            />
+            <Input
+              label="Prix HT"
+              type="number"
+              min="0"
+              step="0.01"
+              value={editingLinePrice}
+              onChange={(e) => setEditingLinePrice(e.target.value)}
+            />
+            <Input
+              label="TVA %"
+              type="number"
+              min="0"
+              step="0.01"
+              value={editingLineVat}
+              onChange={(e) => setEditingLineVat(e.target.value)}
+            />
+          </div>
+        </div>
+      </Modal>
 
       {/* Modal paiement */}
       <Modal
