@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Button, Input, Card } from '@/components/ui';
 import { useAppName } from '@/lib/useAppName';
+import { useAuth } from '@/lib/auth-context';
 
 interface ConfigStatus {
   dolibarrUrl: boolean;
@@ -20,6 +21,65 @@ interface ConfigStatus {
 }
 
 export default function Setup() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+  const [allowWithoutAuth, setAllowWithoutAuth] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const checkSetupConfig = async () => {
+      try {
+        const response = await fetch('/api/setup/config', { cache: 'no-store' });
+        if (!response.ok) {
+          if (active) setAllowWithoutAuth(false);
+          return;
+        }
+
+        const data = await response.json();
+        if (!active) return;
+
+        const dolibarrUrl = String(data?.dolibarrUrl || '').trim();
+        const apiKey = String(data?.apiKey || '').trim();
+        const configured = Boolean(dolibarrUrl && apiKey);
+        setAllowWithoutAuth(!configured);
+      } catch {
+        if (active) setAllowWithoutAuth(false);
+      }
+    };
+
+    checkSetupConfig();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (allowWithoutAuth === null) return;
+    if (allowWithoutAuth) return;
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [allowWithoutAuth, isAuthenticated, isLoading, router]);
+
+  if (allowWithoutAuth === null || (!allowWithoutAuth && isLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-950 dark:to-slate-900">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <p className="mt-4 text-gray-600 dark:text-slate-400">Vérification de la configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!allowWithoutAuth && !isAuthenticated) {
+    return null;
+  }
+
   return <SetupContent />;
 }
 
