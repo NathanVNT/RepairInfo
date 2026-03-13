@@ -56,7 +56,7 @@ DATABASE_URL="file:./prisma/dev.db"
 
 ```env
 NEXT_PUBLIC_DOLIBARR_URL=https://dolibarr.nathanvernet.com/dolibarr
-NEXT_PUBLIC_DOLIBARR_API_KEY=ea0b7B0ce5ZuOJ5wH74n7CysHPVBC8x5
+NEXT_PUBLIC_DOLIBARR_API_KEY=votre_cle_api_dolibarr
 ```
 
 3. **Important** : L'URL doit pointer vers le dossier racine de Dolibarr (pas `/api/index.php`)
@@ -85,7 +85,7 @@ Vous pouvez tester directement votre API avec curl ou Postman :
 
 ```bash
 curl -X GET "https://dolibarr.nathanvernet.com/dolibarr/api/index.php/thirdparties?limit=5" \
-  -H "DOLAPIKEY: ea0b7B0ce5ZuOJ5wH74n7CysHPVBC8x5"
+  -H "DOLAPIKEY: votre_cle_api_dolibarr"
 ```
 
 Si cela fonctionne, vous devriez recevoir une réponse JSON avec la liste des clients.

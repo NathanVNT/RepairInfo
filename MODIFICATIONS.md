@@ -114,7 +114,7 @@ Pour tester manuellement l'API Dolibarr :
 
 ```bash
 curl -X GET "https://dolibarr.nathanvernet.com/dolibarr/api/index.php/thirdparties?limit=5" \
-  -H "DOLAPIKEY: ea0b7B0ce5ZuOJ5wH74n7CysHPVBC8x5"
+  -H "DOLAPIKEY: votre_cle_api_dolibarr"
 ```
 
 Si l'erreur persiste, consulter la documentation Dolibarr ou les logs du serveur.
