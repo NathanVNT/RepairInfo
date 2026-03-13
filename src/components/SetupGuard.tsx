@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 function isExcludedPath(pathname: string): boolean {
-  return pathname.startsWith('/setup') || pathname.startsWith('/suivi');
+  return pathname.startsWith('/setup') || pathname.startsWith('/suivi') || pathname.startsWith('/login');
 }
 
 export function SetupGuard() {

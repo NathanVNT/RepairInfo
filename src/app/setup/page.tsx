@@ -10,7 +10,6 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Button, Input, Card } from '@/components/ui';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAppName } from '@/lib/useAppName';
 
 interface ConfigStatus {
@@ -21,11 +20,7 @@ interface ConfigStatus {
 }
 
 export default function Setup() {
-  return (
-    <ProtectedRoute>
-      <SetupContent />
-    </ProtectedRoute>
-  );
+  return <SetupContent />;
 }
 
 function SetupContent() {
