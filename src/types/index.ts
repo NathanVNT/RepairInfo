@@ -21,6 +21,9 @@ export interface DolibarrThirdParty {
   id: string;
   name: string;
   name_alias?: string;
+  siren?: string;
+  siret?: string;
+  tva_intra?: string;
   email?: string;
   phone?: string;
   address?: string;

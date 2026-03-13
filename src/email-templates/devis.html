@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+  <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif;color:#111827;">
+    <div style="max-width:620px;margin:24px auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+      <div style="background:#0f766e;color:#ffffff;padding:18px 24px;font-size:18px;font-weight:700;">
+        {{app_name}}
+      </div>
+      <div style="padding:24px;line-height:1.6;">
+        <p style="margin:0 0 12px 0;">Bonjour {{client_name}},</p>
+        <p style="margin:0 0 12px 0;">Un devis a été créé pour votre réparation <strong>{{repair_ref}}</strong>.</p>
+        <p style="margin:0 0 8px 0;"><strong>Référence devis:</strong> {{document_ref}}</p>
+        <p style="margin:0 0 14px 0;"><strong>Montant estimé:</strong> {{amount_eur}} EUR</p>
+        <p style="margin:18px 0 0 0;">
+          <a href="{{tracking_url}}" style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:10px 14px;border-radius:8px;">Voir le suivi</a>
+        </p>
+      </div>
+      <div style="padding:14px 24px;background:#f9fafb;color:#6b7280;font-size:12px;">
+        Cet e-mail a été envoyé automatiquement par {{app_name}}.
+      </div>
+    </div>
+  </body>
+</html>

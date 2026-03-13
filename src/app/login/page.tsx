@@ -1,45 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
 import { Wrench, AlertCircle, Loader } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import { useAppName } from '@/lib/useAppName';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [email, setEmail] = useState('admin@atelier.com');
-  const [password, setPassword] = useState('admin123');
-  const [loading, setLoading] = useState(false);
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const { appName, updateAppName } = useAppName();
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Rediriger si déjà connecté
-  if (!authLoading && isAuthenticated) {
-    router.push('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace('/');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadAppName = async () => {
+      try {
+        const response = await fetch('/api/setup/config', { cache: 'no-store' });
+        if (!response.ok) return;
+
+        const config = await response.json();
+        const configuredName = String(config?.appName || '').trim();
+
+        if (active && configuredName) {
+          updateAppName(configuredName);
+        }
+      } catch {
+        // Ignore and keep local/default name.
+      }
+    };
+
+    loadAppName();
+
+    return () => {
+      active = false;
+    };
+  }, [updateAppName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    setSubmitting(true);
 
     try {
-      await login(email, password);
-      router.push('/');
+      await login(identifier, password);
+      router.replace('/');
     } catch (err: any) {
-      setError(err?.message || 'Erreur lors de la connexion');
+      setError(err?.message || 'Connexion impossible');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (authLoading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-950 dark:to-slate-900">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          <p className="mt-4 text-gray-600">Vérification de la session...</p>
+          <p className="mt-4 text-gray-600 dark:text-slate-400">Vérification de la session...</p>
         </div>
       </div>
     );
@@ -48,25 +76,21 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-950 dark:to-slate-900 px-4">
       <div className="w-full max-w-md">
-        {/* Card */}
         <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8">
-          {/* Logo */}
           <div className="flex justify-center mb-6">
             <div className="flex items-center space-x-2">
               <Wrench className="h-8 w-8 text-primary-600" />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Atelier</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{appName}</h1>
             </div>
           </div>
 
-          {/* Titre */}
           <h2 className="text-center text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">
-            Connexion
+            Connexion Dolibarr
           </h2>
           <p className="text-center text-sm text-gray-600 dark:text-slate-400 mb-6">
-            Veuillez vous connecter pour accéder à l'application
+            Utilisez votre identifiant et votre mot de passe Dolibarr
           </p>
 
-          {/* Erreur */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -74,25 +98,22 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Email
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                Identifiant Dolibarr
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@atelier.com"
+                id="identifier"
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="login ou email"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-slate-800 dark:text-slate-100"
                 required
               />
             </div>
 
-            {/* Mot de passe */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Mot de passe
@@ -108,13 +129,12 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Bouton */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="w-full px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center justify-center gap-2"
             >
-              {loading ? (
+              {submitting ? (
                 <>
                   <Loader className="h-5 w-5 animate-spin" />
                   Connexion...
@@ -124,35 +144,7 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Utilisateurs de démo */}
-          <div className="pt-6 border-t border-gray-200 dark:border-slate-700">
-            <p className="text-xs font-semibold text-gray-700 dark:text-slate-300 mb-3">Comptes de production:</p>
-            <div className="space-y-2 text-xs text-gray-600 dark:text-slate-400">
-              <div>
-                <p className="font-medium text-gray-700 dark:text-slate-300">Admin</p>
-                <p>admin@atelier.com / admin123</p>
-              </div>
-              <div>
-                <p className="font-medium text-gray-700 dark:text-slate-300">Technicien</p>
-                <p>technicien@atelier.com / tech123</p>
-              </div>
-              <div>
-                <p className="font-medium text-gray-700 dark:text-slate-300">Gestionnaire Stock</p>
-                <p>stock@atelier.com / stock123</p>
-              </div>
-              <div>
-                <p className="font-medium text-gray-700 dark:text-slate-300">Gestionnaire Finance</p>
-                <p>finance@atelier.com / finance123</p>
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-600 dark:text-slate-400 mt-6">
-          © 2026 Atelier Informatique - Tous droits réservés
-        </p>
       </div>
     </div>
   );

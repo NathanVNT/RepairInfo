@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { dolibarrAPI } from '@/lib/dolibarr-api';
 import { sendEmail } from '@/lib/email-service';
+import { getRuntimeConfig } from '@/lib/runtime-config';
+import { htmlToText, renderEmailTemplate } from '@/lib/email-templates';
 
 // POST /api/reparations/[id]/devis - Créer un devis Dolibarr depuis une réparation
 export async function POST(
@@ -103,29 +105,28 @@ export async function POST(
       try {
         const client = await dolibarrAPI.getThirdParty(reparation.client_id);
         const clientEmail = (client as any)?.email as string | undefined;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+        const runtime = await getRuntimeConfig();
+        const appName = runtime.appName || process.env.NEXT_PUBLIC_APP_NAME || 'Atelier Informatique';
+        const appUrl = runtime.appUrl || process.env.NEXT_PUBLIC_APP_URL || '';
         const suiviUrl = appUrl ? `${appUrl}/suivi/${encodeURIComponent(reparation.ref)}` : '';
 
         if (clientEmail) {
-          const subject = `[Atelier] Nouveau devis pour votre réparation ${reparation.ref}`;
-          const text = [
-            `Bonjour ${reparation.client_name},`,
-            '',
-            `Un devis vient d'être créé pour votre réparation ${reparation.ref}.`,
-            `Référence devis Dolibarr: ${proposalId}`,
-            `Montant estimé: ${(reparation.montant_estime || 0).toFixed(2)} EUR`,
-            suiviUrl ? `Suivi en ligne: ${suiviUrl}` : '',
-            '',
-            'Cordialement,',
-            "L'atelier",
-          ]
-            .filter(Boolean)
-            .join('\n');
+          const subject = `[${appName}] Nouveau devis pour votre réparation ${reparation.ref}`;
+          const html = await renderEmailTemplate('devis', {
+            app_name: appName,
+            client_name: reparation.client_name,
+            repair_ref: reparation.ref,
+            document_ref: proposalId,
+            amount_eur: (reparation.montant_estime || 0).toFixed(2),
+            tracking_url: suiviUrl || '#',
+          });
+          const text = htmlToText(html);
 
           await sendEmail({
             to: clientEmail,
             subject,
             text,
+            html,
           });
         }
       } catch (notificationError) {

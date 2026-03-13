@@ -17,7 +17,7 @@ export function Button({
   
   const variants = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
-    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
   };
@@ -84,12 +84,12 @@ export function Input({ label, error, helperText, className = '', ...props }: In
   return (
     <div className="mb-4">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
           {label}
         </label>
       )}
       <input
-        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+        className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 placeholder:text-gray-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
           error 
             ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
             : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'
@@ -113,12 +113,12 @@ export function Select({ label, error, helperText, options, className = '', ...p
   return (
     <div className="mb-4">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
           {label}
         </label>
       )}
       <select
-        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+        className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 ${
           error 
             ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
             : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'
@@ -147,12 +147,12 @@ export function Textarea({ label, error, helperText, className = '', ...props }:
   return (
     <div className="mb-4">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
           {label}
         </label>
       )}
       <textarea
-        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+        className={`w-full px-3 py-2 border rounded-md bg-white text-gray-900 placeholder:text-gray-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
           error 
             ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
             : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'
@@ -186,9 +186,9 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
         />
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+        <div className="inline-block align-bottom bg-white dark:bg-slate-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-transparent dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-900 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-slate-100 mb-4">
               {title}
             </h3>
             <div className="mt-2">
@@ -196,7 +196,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
             </div>
           </div>
           {footer && (
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div className="bg-gray-50 dark:bg-slate-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               {footer}
             </div>
           )}

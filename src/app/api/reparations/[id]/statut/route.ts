@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { dolibarrAPI } from '@/lib/dolibarr-api';
 import { sendEmail } from '@/lib/email-service';
+import { getRuntimeConfig } from '@/lib/runtime-config';
+import { htmlToText, renderEmailTemplate } from '@/lib/email-templates';
 
 const statutLabels: Record<string, string> = {
   en_attente: 'En attente',
@@ -47,29 +49,29 @@ export async function POST(
       try {
         const client = await dolibarrAPI.getThirdParty(reparation.client_id);
         const clientEmail = (client as any)?.email as string | undefined;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+        const runtime = await getRuntimeConfig();
+        const appName = runtime.appName || process.env.NEXT_PUBLIC_APP_NAME || 'Atelier Informatique';
+        const appUrl = runtime.appUrl || process.env.NEXT_PUBLIC_APP_URL || '';
         const suiviUrl = appUrl ? `${appUrl}/suivi/${encodeURIComponent(reparation.ref)}` : '';
 
         if (clientEmail) {
           const statutLabel = statutLabels[statut] || statut;
-          const subject = `[Atelier] Mise à jour de votre réparation ${reparation.ref}`;
-          const text = [
-            `Bonjour ${reparation.client_name},`,
-            '',
-            `Le statut de votre réparation ${reparation.ref} a été mis à jour: ${statutLabel}.`,
-            commentaire ? `Commentaire: ${commentaire}` : '',
-            suiviUrl ? `Suivi en ligne: ${suiviUrl}` : '',
-            '',
-            'Cordialement,',
-            "L'atelier",
-          ]
-            .filter(Boolean)
-            .join('\n');
+          const subject = `[${appName}] Mise à jour de votre réparation ${reparation.ref}`;
+          const html = await renderEmailTemplate('statut', {
+            app_name: appName,
+            client_name: reparation.client_name,
+            repair_ref: reparation.ref,
+            status_label: statutLabel,
+            comment: commentaire || 'Aucun commentaire',
+            tracking_url: suiviUrl || '#',
+          });
+          const text = htmlToText(html);
 
           await sendEmail({
             to: clientEmail,
             subject,
             text,
+            html,
           });
         }
       } catch (notificationError) {

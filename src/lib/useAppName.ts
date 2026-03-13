@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY = 'atelier-appname';
 const DEFAULT_NAME = 'Atelier Informatique';
@@ -19,7 +19,7 @@ export function useAppName() {
     setMounted(true);
   }, []);
 
-  const updateAppName = (newName: string) => {
+  const updateAppName = useCallback((newName: string) => {
     if (newName.trim()) {
       setAppName(newName.trim());
       try {
@@ -28,7 +28,7 @@ export function useAppName() {
         // localStorage not available
       }
     }
-  };
+  }, []);
 
   return { appName, updateAppName, mounted };
 }

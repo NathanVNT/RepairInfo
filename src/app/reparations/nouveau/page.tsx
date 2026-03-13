@@ -154,15 +154,15 @@ export default function NewReparationPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-slate-900 shadow-sm dark:border-b dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link href="/reparations" className="text-gray-600 hover:text-gray-900">
+            <Link href="/reparations" className="text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100">
               <ArrowLeft className="h-6 w-6" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Nouvelle réparation</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Nouvelle réparation</h1>
           </div>
         </div>
       </header>
@@ -171,17 +171,17 @@ export default function NewReparationPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit}>
           {/* Informations Client */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Informations Client</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Informations Client</h2>
             
             <div className="space-y-4">
               {/* Client sélectionné */}
               {formData.client_id ? (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">{formData.client_name}</p>
-                      <p className="text-sm text-gray-600">Client sélectionné</p>
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{formData.client_name}</p>
+                      <p className="text-sm text-gray-600 dark:text-slate-400">Client sélectionné</p>
                     </div>
                     <Button
                       type="button"
@@ -215,13 +215,13 @@ export default function NewReparationPage() {
 
               {/* Zone de recherche client */}
               {showClientSearch && !formData.client_id && (
-                <div className="border border-gray-300 rounded-lg p-4">
+                <div className="border border-gray-300 dark:border-slate-700 rounded-lg p-4 dark:bg-slate-800/50">
                   <input
                     type="text"
                     placeholder="Rechercher par nom ou email..."
                     value={searchClient}
                     onChange={(e) => setSearchClient(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                   />
                   <div className="max-h-60 overflow-y-auto space-y-2">
                     {filteredClients.map(client => (
@@ -229,16 +229,16 @@ export default function NewReparationPage() {
                         key={client.id}
                         type="button"
                         onClick={() => selectClient(client)}
-                        className="w-full text-left p-3 hover:bg-gray-50 rounded-lg border border-gray-200 transition-colors"
+                        className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg border border-gray-200 dark:border-slate-700 transition-colors"
                       >
-                        <p className="font-medium text-gray-900">{client.name}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-100">{client.name}</p>
                         {client.email && (
-                          <p className="text-sm text-gray-600">{client.email}</p>
+                          <p className="text-sm text-gray-600 dark:text-slate-400">{client.email}</p>
                         )}
                       </button>
                     ))}
                     {filteredClients.length === 0 && (
-                      <p className="text-center text-gray-500 py-4">Aucun client trouvé</p>
+                      <p className="text-center text-gray-500 dark:text-slate-400 py-4">Aucun client trouvé</p>
                     )}
                   </div>
                   <div className="mt-3 pt-3 border-t">
@@ -255,8 +255,8 @@ export default function NewReparationPage() {
           </Card>
 
           {/* Informations Appareil */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Informations Appareil</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Informations Appareil</h2>
             
             <div className="grid md:grid-cols-2 gap-4">
               <Input
@@ -282,7 +282,7 @@ export default function NewReparationPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   Numéro de série
                 </label>
                 <div className="flex gap-2">
@@ -291,7 +291,7 @@ export default function NewReparationPage() {
                     placeholder="S/N..."
                     value={formData.numero_serie}
                     onChange={(e) => handleChange('numero_serie', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                   />
                   <ScanButton
                     onScan={handleSerialScan}
@@ -314,8 +314,8 @@ export default function NewReparationPage() {
           </Card>
 
           {/* Paramètres de la réparation */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Paramètres</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Paramètres</h2>
             
             <div className="grid md:grid-cols-2 gap-4">
               <Input
@@ -368,8 +368,8 @@ export default function NewReparationPage() {
           </Card>
 
           {/* Notes */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Notes</h2>
             
             <Textarea
               label="Note interne (non visible par le client)"
@@ -390,10 +390,10 @@ export default function NewReparationPage() {
           </Card>
 
           {/* Notifications client */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Notifications client</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Notifications client</h2>
             <div className="space-y-3">
-              <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label className="flex items-start gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.notification_statut}
@@ -401,12 +401,12 @@ export default function NewReparationPage() {
                   className="mt-0.5 h-4 w-4"
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Notification changement d'état de la réparation</p>
-                  <p className="text-sm text-gray-600">Envoie un e-mail au client à chaque changement de statut.</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Notification changement d'état de la réparation</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400">Envoie un e-mail au client à chaque changement de statut.</p>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label className="flex items-start gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.notification_documents}
@@ -414,8 +414,8 @@ export default function NewReparationPage() {
                   className="mt-0.5 h-4 w-4"
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Notification devis et factures</p>
-                  <p className="text-sm text-gray-600">Envoie un e-mail quand un devis ou une facture est créée.</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Notification devis et factures</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400">Envoie un e-mail quand un devis ou une facture est créée.</p>
                 </div>
               </label>
             </div>

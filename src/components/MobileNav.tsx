@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Scan, Home, Package, Wrench, Users, BarChart3, FileText, Settings, LogOut } from 'lucide-react';
 import { Button } from './ui';
 import { BarcodeScanner } from './BarcodeScanner';
@@ -15,8 +15,11 @@ export function MobileNav() {
   const [showScanner, setShowScanner] = useState(false);
   const [scanning, setScanning] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { appName, mounted } = useAppName();
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+
+  if (pathname === '/login' || pathname?.startsWith('/suivi')) return null;
 
   const handleScan = async (code: string) => {
     setScanning(true);
@@ -93,11 +96,11 @@ export function MobileNav() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {isAuthenticated && user && (
+              {isAuthenticated && user && !isLoading && (
                 <div className="hidden sm:flex items-center gap-2">
                   <div className="flex flex-col items-end text-sm">
                     <span className="font-medium text-gray-900 dark:text-slate-100">{user.nom}</span>
-                    <span className="text-xs text-gray-500 dark:text-slate-400">{user.role}</span>
+                    <span className="text-xs text-gray-500 dark:text-slate-400">{user.login}</span>
                   </div>
                 </div>
               )}
@@ -108,6 +111,15 @@ export function MobileNav() {
                 <Settings className="h-4 w-4" />
               </Link>
               <ThemeToggle />
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="hidden sm:inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Déconnexion</span>
+                </button>
+              )}
               <button
                 onClick={() => setIsOpen(true)}
                 className="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-gray-700 hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors"
@@ -167,7 +179,7 @@ export function MobileNav() {
               <div className="p-4 border-b border-gray-200 dark:border-slate-700">
                 <p className="text-sm text-gray-600 dark:text-slate-400">Connecté en tant que</p>
                 <p className="font-medium text-gray-900 dark:text-slate-100">{user.nom}</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 capitalize">{user.role.replace(/_/g, ' ')}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{user.login}</p>
               </div>
             )}
             <div className="p-4 space-y-2">

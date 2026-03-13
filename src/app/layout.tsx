@@ -4,6 +4,7 @@ import './globals.css';
 import { MobileNav } from '@/components/MobileNav';
 import { TitleUpdater } from '@/components/TitleUpdater';
 import { AuthProvider } from '@/lib/auth-context';
+import { MainWrapper } from '@/components/MainWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,9 +39,9 @@ export default function RootLayout({
         <AuthProvider>
           <TitleUpdater />
           <MobileNav />
-          <div className="pb-24 lg:pb-0">
+          <MainWrapper>
             {children}
-          </div>
+          </MainWrapper>
         </AuthProvider>
       </body>
     </html>

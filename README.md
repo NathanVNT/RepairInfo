@@ -153,6 +153,57 @@ L'application utilise **SQLite** avec **Prisma ORM** pour stocker les réparatio
    
    Au premier lancement, accédez à [http://localhost:3000/setup](http://localhost:3000/setup) pour configurer la connexion à Dolibarr via l'interface graphique.
 
+## 🐧 Installation Auto Ubuntu (daemon systemd)
+
+Un script d'installation automatique est disponible pour Ubuntu. Il :
+- installe les dépendances système (curl, git, build-essential, sqlite3)
+- installe Node.js 20 si nécessaire
+- installe les dépendances npm
+- exécute Prisma generate + migration deploy
+- build l'application
+- crée et active un service systemd
+
+Commande :
+
+```bash
+sudo bash scripts/install-ubuntu-daemon.sh \
+   --app-dir /opt/App_Atelier_Informatique \
+   --app-user www-data \
+   --port 3000 \
+   --service-name app-atelier
+```
+
+Mode one-liner (clone/pull + install daemon):
+
+```bash
+sudo bash scripts/install-ubuntu-quick.sh \
+   --repo-url https://github.com/OWNER/REPO.git \
+   --branch main \
+   --app-dir /opt/App_Atelier_Informatique \
+   --app-user www-data \
+   --port 3000 \
+   --service-name app-atelier
+```
+
+Mode one-liner distant (sans clone manuel préalable):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/scripts/install-ubuntu-quick.sh | sudo bash -s -- \
+   --repo-url https://github.com/OWNER/REPO.git \
+   --branch main \
+   --app-dir /opt/App_Atelier_Informatique \
+   --app-user www-data \
+   --port 3000 \
+   --service-name app-atelier
+```
+
+Vérification :
+
+```bash
+systemctl status app-atelier
+journalctl -u app-atelier -f
+```
+
 ## 🔑 Configuration Dolibarr
 
 ### Activer l'API REST

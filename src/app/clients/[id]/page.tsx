@@ -85,7 +85,12 @@ export default function ClientDetailPage() {
     );
   }
 
-  const isEntreprise = client.name_alias && client.name_alias !== client.name;
+  const isEntreprise = Boolean(
+    (client.name_alias && client.name_alias !== client.name) ||
+    client.siret ||
+    client.siren ||
+    client.tva_intra
+  );
 
   const stats = {
     reparationsTotal: reparations.length,
@@ -215,6 +220,24 @@ export default function ClientDetailPage() {
                   <div>
                     <p className="text-sm text-gray-600">Nom commercial</p>
                     <p className="font-medium text-gray-900">{client.name_alias}</p>
+                  </div>
+                )}
+                {client.siret && (
+                  <div>
+                    <p className="text-sm text-gray-600">SIRET</p>
+                    <p className="font-medium text-gray-900">{client.siret}</p>
+                  </div>
+                )}
+                {client.siren && (
+                  <div>
+                    <p className="text-sm text-gray-600">SIREN</p>
+                    <p className="font-medium text-gray-900">{client.siren}</p>
+                  </div>
+                )}
+                {client.tva_intra && (
+                  <div>
+                    <p className="text-sm text-gray-600">TVA intracommunautaire</p>
+                    <p className="font-medium text-gray-900">{client.tva_intra}</p>
                   </div>
                 )}
                 <div>
