@@ -26,6 +26,7 @@ Application locale:
 Scripts disponibles:
 - scripts/install-ubuntu-daemon.sh
 - scripts/install-ubuntu-quick.sh
+- scripts/update-ubuntu.sh
 
 One-liner (repo GitHub):
 ```bash
@@ -36,6 +37,15 @@ curl -fsSL https://raw.githubusercontent.com/NathanVNT/RepairInfo/main/scripts/i
   --app-user www-data \
   --port 3000 \
   --service-name repairinfo
+```
+
+Mise a jour (sans reinstall complete):
+```bash
+sudo bash /opt/RepairInfo/scripts/update-ubuntu.sh \
+  --app-dir /opt/RepairInfo \
+  --app-user www-data \
+  --service-name repairinfo \
+  --branch main
 ```
 
 ## Securite
