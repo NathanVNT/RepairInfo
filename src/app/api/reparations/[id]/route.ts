@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ensureReparationSchema } from '@/lib/reparation-schema';
 
 function parseDateDepotForUpdate(value?: string): Date | undefined {
   if (!value) return undefined;
@@ -28,6 +29,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    await ensureReparationSchema();
     const reparation = await prisma.reparation.findUnique({
       where: { id: params.id },
       include: {
@@ -73,6 +75,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await ensureReparationSchema();
     const body = await request.json();
 
     const reparation: any = await prisma.reparation.update({
@@ -163,6 +166,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    await ensureReparationSchema();
     await prisma.reparation.delete({
       where: { id: params.id },
     });

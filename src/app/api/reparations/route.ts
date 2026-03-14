@@ -37,16 +37,26 @@ export async function GET(request: NextRequest) {
     if (client_id) where.client_id = client_id;
     if (technicien) where.technicien = technicien;
 
-    const reparations = await prisma.reparation.findMany({
-      where,
-      include: {
-        historique: {
-          orderBy: { date: 'desc' },
+    let reparations: any[] = [];
+
+    try {
+      reparations = await prisma.reparation.findMany({
+        where,
+        include: {
+          historique: {
+            orderBy: { date: 'desc' },
+          },
+          pieces_utilisees: true,
         },
-        pieces_utilisees: true,
-      },
-      orderBy: { date_depot: 'desc' },
-    });
+        orderBy: { date_depot: 'desc' },
+      });
+    } catch (relationError) {
+      console.warn('[API Reparations] Fallback sans relations:', relationError);
+      reparations = await prisma.reparation.findMany({
+        where,
+        orderBy: { date_depot: 'desc' },
+      });
+    }
 
     // Convertir les dates en ISO strings pour la sérialisation JSON
     const formattedReparations = reparations.map((rep: any) => ({
@@ -54,17 +64,22 @@ export async function GET(request: NextRequest) {
       date_depot: rep.date_depot.toISOString(),
       date_prevue: rep.date_prevue?.toISOString(),
       date_fin: rep.date_fin?.toISOString(),
-      historique: rep.historique.map((h: any) => ({
+      historique: Array.isArray(rep.historique) ? rep.historique.map((h: any) => ({
         ...h,
         date: h.date.toISOString(),
-      })),
+      })) : [],
+      pieces_utilisees: Array.isArray(rep.pieces_utilisees) ? rep.pieces_utilisees : [],
     }));
 
     return NextResponse.json(formattedReparations);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur lors de la récupération des réparations:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération des réparations' },
+      {
+        error: 'Erreur lors de la récupération des réparations',
+        message: error?.message || 'Erreur inconnue',
+        details: error?.code || null,
+      },
       { status: 500 }
     );
   }
@@ -83,39 +98,70 @@ export async function POST(request: NextRequest) {
     const ref = `REP-${year}-${String(count + 1).padStart(5, '0')}`;
     console.log('[API Reparations] Référence générée:', ref);
 
-    // Créer la réparation avec l'historique initial
-    const reparation: any = await prisma.reparation.create({
-      data: {
-        ref,
-        client_id: body.client_id,
-        client_name: body.client_name,
-        appareil: body.appareil,
-        marque: body.marque,
-        modele: body.modele,
-        numero_serie: body.numero_serie,
-        description_panne: body.description_panne,
-        date_depot: parseDateDepot(body.date_depot),
-        date_prevue: body.date_prevue ? new Date(body.date_prevue) : null,
-        statut: body.statut || 'en_attente',
-        priorite: body.priorite || 'normale',
-        montant_estime: body.montant_estime,
-        technicien: body.technicien,
-        note_interne: body.note_interne,
-        note_client: body.note_client,
-        historique: {
-          create: {
+    const createData: any = {
+      ref,
+      client_id: body.client_id,
+      client_name: body.client_name,
+      appareil: body.appareil,
+      marque: body.marque,
+      modele: body.modele,
+      numero_serie: body.numero_serie,
+      description_panne: body.description_panne,
+      date_depot: parseDateDepot(body.date_depot),
+      date_prevue: body.date_prevue ? new Date(body.date_prevue) : null,
+      statut: body.statut || 'en_attente',
+      priorite: body.priorite || 'normale',
+      montant_estime: body.montant_estime,
+      technicien: body.technicien,
+      note_interne: body.note_interne,
+      note_client: body.note_client,
+      historique: {
+        create: {
+          action: 'Création',
+          description: 'Réparation créée',
+          auteur: body.technicien || 'Système',
+          visible_client: true,
+        },
+      },
+    };
+
+    let reparation: any;
+    try {
+      reparation = await prisma.reparation.create({
+        data: createData,
+        include: {
+          historique: true,
+          pieces_utilisees: true,
+        },
+      } as any);
+    } catch (createWithRelationsError) {
+      console.warn('[API Reparations] Fallback création sans historique relationnel:', createWithRelationsError);
+      const fallbackData = { ...createData };
+      delete fallbackData.historique;
+      reparation = await prisma.reparation.create({
+        data: fallbackData,
+      } as any);
+
+      try {
+        await prisma.reparationHistorique.create({
+          data: {
+            reparation_id: reparation.id,
             action: 'Création',
             description: 'Réparation créée',
             auteur: body.technicien || 'Système',
             visible_client: true,
           },
-        },
-      },
-      include: {
-        historique: true,
-        pieces_utilisees: true,
-      },
-    } as any);
+        } as any);
+      } catch (historyError) {
+        console.warn('[API Reparations] Historique initial non créé:', historyError);
+      }
+
+      reparation = {
+        ...reparation,
+        historique: [],
+        pieces_utilisees: [],
+      };
+    }
 
     // Compat runtime: certains processus gardent un client Prisma sans les nouveaux champs.
     // On persiste les préférences via SQL brut pour éviter l'erreur "Unknown argument".
@@ -138,10 +184,11 @@ export async function POST(request: NextRequest) {
       date_depot: reparation.date_depot.toISOString(),
       date_prevue: reparation.date_prevue?.toISOString(),
       date_fin: reparation.date_fin?.toISOString(),
-      historique: reparation.historique.map((h: any) => ({
+      historique: Array.isArray(reparation.historique) ? reparation.historique.map((h: any) => ({
         ...h,
         date: h.date.toISOString(),
-      })),
+      })) : [],
+      pieces_utilisees: Array.isArray(reparation.pieces_utilisees) ? reparation.pieces_utilisees : [],
     };
 
     return NextResponse.json(formattedReparation, { status: 201 });
