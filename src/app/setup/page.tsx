@@ -98,7 +98,6 @@ function SetupContent() {
   const [smtpPass, setSmtpPass] = useState('');
   const [smtpFrom, setSmtpFrom] = useState('');
   const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
   const [status, setStatus] = useState<ConfigStatus>({
     dolibarrUrl: false,
@@ -385,90 +384,6 @@ function SetupContent() {
     }
   };
 
-  const saveConfiguration = async () => {
-    if (!localAppName.trim() || !dolibarrUrl.trim() || !apiKey.trim()) {
-      alert('Veuillez renseigner au minimum le nom de l\'application, l\'URL Dolibarr et la clé API avant de sauvegarder');
-      return;
-    }
-
-    setSaving(true);
-    
-    try {
-      const runtimeSaveResponse = await fetch('/api/setup/config', {
-        method: 'POST',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(getSetupPayload()),
-      });
-
-      if (!runtimeSaveResponse.ok) {
-        const errorData = await runtimeSaveResponse.json().catch(() => ({}));
-        throw new Error(errorData?.error || 'Impossible de sauvegarder le nom de l\'application');
-      }
-
-      const savedConfig = await runtimeSaveResponse.json().catch(() => null);
-      if (savedConfig) {
-        try {
-          sessionStorage.setItem(RUNTIME_CONFIG_CACHE_KEY, JSON.stringify(savedConfig));
-        } catch (_) {
-          // sessionStorage indisponible
-        }
-        setDolibarrUrl(String(savedConfig.dolibarrUrl ?? dolibarrUrl));
-        setApiKey(String(savedConfig.apiKey ?? apiKey));
-        setLocalAppName(String(savedConfig.appName ?? localAppName));
-        setAppUrl(String(savedConfig.appUrl ?? appUrl));
-        setSmtpHost(String(savedConfig.smtpHost ?? smtpHost));
-        setSmtpPort(String(savedConfig.smtpPort ?? smtpPort));
-        setSmtpSecure(String(savedConfig.smtpSecure ?? smtpSecure));
-        setSmtpUser(String(savedConfig.smtpUser ?? smtpUser));
-        setSmtpPass(String(savedConfig.smtpPass ?? smtpPass));
-        setSmtpFrom(String(savedConfig.smtpFrom ?? smtpFrom));
-      }
-
-      const envContent = `# Configuration Dolibarr API
-NEXT_PUBLIC_DOLIBARR_URL=${dolibarrUrl}
-NEXT_PUBLIC_DOLIBARR_API_KEY=${apiKey}
-
-# Configuration Application
-NEXT_PUBLIC_APP_NAME=${localAppName}
-NEXT_PUBLIC_APP_URL=${appUrl}
-
-# Configuration SMTP
-SMTP_HOST=${smtpHost}
-SMTP_PORT=${smtpPort}
-SMTP_SECURE=${smtpSecure}
-SMTP_USER=${smtpUser}
-SMTP_PASS=${String(savedConfig?.smtpPassEnvValue ?? smtpPass)}
-SMTP_FROM=${smtpFrom}
-`;
-
-      // Créer un blob et télécharger
-      const blob = new Blob([envContent], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = '.env';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      if (savedConfig?.envFileUpdated === false && savedConfig?.envFileWarning) {
-        alert(`Configuration sauvegardée.\n\n${String(savedConfig.envFileWarning)}\n\nLe fichier .env a aussi été téléchargé: placez-le à la racine du projet puis redémarrez le serveur.`);
-      } else {
-        alert('Configuration sauvegardée. Le nom d\'application et les paramètres SMTP sont appliqués immédiatement aux e-mails.\n\nLe fichier .env du projet a été mis à jour et un .env a aussi été téléchargé. Redémarrez le serveur pour recharger les variables d\'environnement.');
-      }
-      
-    } catch (error) {
-      console.error('Erreur sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde du fichier');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const allConfigured = status.dolibarrUrl && status.apiKey && status.apiConnection;
 
   return (
@@ -688,23 +603,6 @@ SMTP_FROM=${smtpFrom}
               )}
             </Button>
 
-            <Button
-              onClick={saveConfiguration}
-              disabled={saving || !localAppName.trim() || !dolibarrUrl.trim() || !apiKey.trim()}
-              className="flex-1"
-            >
-              {saving ? (
-                <>
-                  <Loader className="h-5 w-5 mr-2 animate-spin" />
-                  Sauvegarde...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Télécharger .env.local
-                </>
-              )}
-            </Button>
           </div>
 
           {allConfigured && (
@@ -723,40 +621,19 @@ SMTP_FROM=${smtpFrom}
         {/* Guide */}
         <Card className="mt-6 dark:border dark:border-slate-800">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Guide de configuration Dolibarr
+            Documentation
           </h3>
-          <div className="space-y-3 text-sm text-gray-600 dark:text-slate-400">
-            <div className="flex items-start">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 text-primary-600 font-semibold text-xs mr-3 flex-shrink-0">
-                1
-              </span>
-              <div>
-                <p className="font-medium text-gray-900">Activer l'API REST</p>
-                <p>Configuration → Modules/Applications → API/WebServices</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 text-primary-600 font-semibold text-xs mr-3 flex-shrink-0">
-                2
-              </span>
-              <div>
-                <p className="font-medium text-gray-900">Générer une clé API</p>
-                <p>Profil utilisateur → Token API → Générer un nouveau token</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 text-primary-600 font-semibold text-xs mr-3 flex-shrink-0">
-                3
-              </span>
-              <div>
-                <p className="font-medium text-gray-900">Configurer CORS</p>
-                <p>Configuration → API → Autorisations CORS → Ajouter votre domaine</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700">
+          <div className="p-3 bg-blue-50 dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700">
             <p className="text-sm text-blue-800 dark:text-slate-200">
-              📘 Pour plus de détails, consultez le fichier <code className="bg-blue-100 px-1 rounded">DOLIBARR_CONFIG.md</code>
+              Pour plus de détails sur la configuration, consultez le wiki:{' '}
+              <a
+                href="https://wiki.repairinfo.nathanvernet.fr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-medium"
+              >
+                wiki.repairinfo.nathanvernet.fr
+              </a>
             </p>
           </div>
         </Card>
