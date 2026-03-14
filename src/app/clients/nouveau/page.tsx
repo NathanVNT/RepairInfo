@@ -119,15 +119,15 @@ export default function NewClientPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-slate-900 shadow-sm dark:border-b dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link href="/clients" className="text-gray-600 hover:text-gray-900">
+            <Link href="/clients" className="text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100">
               <ArrowLeft className="h-6 w-6" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Nouveau client</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Nouveau client</h1>
           </div>
         </div>
       </header>
@@ -136,43 +136,43 @@ export default function NewClientPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit}>
           {/* Type de client */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Type de client</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Type de client</h2>
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setClientType('particulier')}
                 className={`p-4 border-2 rounded-lg transition-all ${
                   clientType === 'particulier'
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-300 hover:border-gray-400'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                    : 'border-gray-300 hover:border-gray-400 dark:border-slate-700 dark:hover:border-slate-500'
                 }`}
               >
                 <User className={`h-8 w-8 mx-auto mb-2 ${
                   clientType === 'particulier' ? 'text-primary-600' : 'text-gray-400'
                 }`} />
-                <p className="font-medium">Particulier</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Particulier</p>
               </button>
               <button
                 type="button"
                 onClick={() => setClientType('entreprise')}
                 className={`p-4 border-2 rounded-lg transition-all ${
                   clientType === 'entreprise'
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-300 hover:border-gray-400'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                    : 'border-gray-300 hover:border-gray-400 dark:border-slate-700 dark:hover:border-slate-500'
                 }`}
               >
                 <Building2 className={`h-8 w-8 mx-auto mb-2 ${
                   clientType === 'entreprise' ? 'text-primary-600' : 'text-gray-400'
                 }`} />
-                <p className="font-medium">Entreprise</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Entreprise</p>
               </button>
             </div>
           </Card>
 
           {/* Informations générales */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Informations</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Informations</h2>
             
             <div className="space-y-4">
               {clientType === 'entreprise' ? (
@@ -225,8 +225,8 @@ export default function NewClientPage() {
           </Card>
 
           {/* Contact */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Contact</h2>
             
             <div className="grid md:grid-cols-2 gap-4">
               <Input
@@ -257,8 +257,8 @@ export default function NewClientPage() {
           </Card>
 
           {/* Adresse */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Adresse</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Adresse</h2>
             
             <div className="space-y-4">
               <Input
@@ -287,15 +287,15 @@ export default function NewClientPage() {
           </Card>
 
           {/* Notes */}
-          <Card className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes internes</h2>
+          <Card className="mb-6 dark:border dark:border-slate-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Notes internes</h2>
             
             <textarea
               placeholder="Informations complémentaires, préférences..."
               value={formData.note_private}
               onChange={(e) => handleChange('note_private', e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
             />
           </Card>
 

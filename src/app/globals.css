@@ -25,6 +25,22 @@ body {
 }
 
 @layer base {
+  input,
+  textarea,
+  select,
+  option,
+  button {
+    font: inherit;
+  }
+
+  html.dark select,
+  html.dark option {
+    color: rgb(241 245 249);
+    background-color: rgb(15 23 42);
+  }
+}
+
+@layer base {
   html.dark body {
     @apply bg-slate-950 text-slate-100;
   }
