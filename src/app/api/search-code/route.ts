@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dolibarrAPI } from '@/lib/dolibarr-api';
 import { reparationService } from '@/lib/reparation-service';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * GET /api/search-code
  * Recherche un code-barres/ref dans les produits ou réparations
