@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AUTH_COOKIE_NAME } from '@/lib/auth-session';
+import { AUTH_COOKIE_NAME, getAuthCookieOptions } from '@/lib/auth-session';
 
 export const runtime = 'nodejs';
 
 export async function POST(_request: NextRequest) {
   const response = NextResponse.json({ ok: true });
+  const baseCookieOptions = getAuthCookieOptions();
   response.cookies.set(AUTH_COOKIE_NAME, '', {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
+    ...baseCookieOptions,
     maxAge: 0,
   });
   return response;

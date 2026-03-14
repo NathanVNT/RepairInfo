@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ensureReparationSchema } from '@/lib/reparation-schema';
 
 // GET /api/reparations/stats - Récupérer les statistiques
 export async function GET() {
   try {
+    await ensureReparationSchema();
     const total = await prisma.reparation.count();
     const enCours = await prisma.reparation.count({
       where: {

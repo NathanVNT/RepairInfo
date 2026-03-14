@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ensureReparationSchema } from '@/lib/reparation-schema';
 
 function parseDateDepot(value?: string): Date {
   if (!value) return new Date();
@@ -25,6 +26,7 @@ function parseDateDepot(value?: string): Date {
 // GET /api/reparations - Récupérer toutes les réparations avec filtres
 export async function GET(request: NextRequest) {
   try {
+    await ensureReparationSchema();
     const { searchParams } = new URL(request.url);
     const statut = searchParams.get('statut');
     const client_id = searchParams.get('client_id');
@@ -71,6 +73,7 @@ export async function GET(request: NextRequest) {
 // POST /api/reparations - Créer une nouvelle réparation
 export async function POST(request: NextRequest) {
   try {
+    await ensureReparationSchema();
     const body = await request.json();
     console.log('[API Reparations] Création avec data:', body);
 

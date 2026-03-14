@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Configuration API Dolibarr incomplète',
-          hint: 'Configurez NEXT_PUBLIC_DOLIBARR_URL puis redémarrez le serveur Next.js.',
+          hint: 'Configurez Dolibarr via /setup (ou NEXT_PUBLIC_DOLIBARR_URL/NEXT_PUBLIC_DOLIBARR_API_KEY) puis redémarrez le serveur.',
         },
         { status: 500 }
       );

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { AuthUser } from './auth-types';
+import { getRuntimeConfig } from './runtime-config';
 
 type DolibarrInfoResponse = {
   id?: string | number;
@@ -41,8 +42,9 @@ export class DolibarrApiAuthUnavailableError extends Error {
   }
 }
 
-function getDolibarrBaseUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_DOLIBARR_URL;
+async function getDolibarrBaseUrl(): Promise<string> {
+  const runtime = await getRuntimeConfig();
+  const baseUrl = normalizeText(runtime?.dolibarrUrl) || process.env.NEXT_PUBLIC_DOLIBARR_URL;
   if (!baseUrl) {
     throw new DolibarrApiConfigError('NEXT_PUBLIC_DOLIBARR_URL manquante');
   }
@@ -86,7 +88,7 @@ export async function authenticateDolibarrApiUser(identifier: string, apiToken: 
 
   if (!token) return null;
 
-  const baseUrl = getDolibarrBaseUrl();
+  const baseUrl = await getDolibarrBaseUrl();
   const { data } = await axios.get<DolibarrInfoResponse>(`${baseUrl}/api/index.php/users/info`, {
     headers: {
       DOLAPIKEY: token,
@@ -130,7 +132,7 @@ function extractToken(payload: LoginExchangeResponse): string {
 }
 
 async function exchangeTokenWithCredentials(identifier: string, password: string): Promise<string> {
-  const baseUrl = getDolibarrBaseUrl();
+  const baseUrl = await getDolibarrBaseUrl();
 
   try {
     const { data } = await axios.post<LoginExchangeResponse>(
@@ -179,7 +181,7 @@ export async function authenticateDolibarrApiWithPassword(
   const wanted = normalizeText(identifier).toLowerCase();
   const apiToken = await exchangeTokenWithCredentials(identifier, password);
 
-  const baseUrl = getDolibarrBaseUrl();
+  const baseUrl = await getDolibarrBaseUrl();
   const { data } = await axios.get<DolibarrInfoResponse>(`${baseUrl}/api/index.php/users/info`, {
     headers: {
       DOLAPIKEY: apiToken,
@@ -208,7 +210,7 @@ export async function listDolibarrApiUsers(apiToken: string, limit = 200): Promi
     throw new DolibarrApiConfigError('NEXT_PUBLIC_DOLIBARR_API_KEY manquante');
   }
 
-  const baseUrl = getDolibarrBaseUrl();
+  const baseUrl = await getDolibarrBaseUrl();
   const { data } = await axios.get<{ value?: DolibarrUserListItem[] } | DolibarrUserListItem[]>(
     `${baseUrl}/api/index.php/users?limit=${limit}`,
     {

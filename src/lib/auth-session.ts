@@ -90,10 +90,13 @@ export function getAuthSessionFromRequest(request: NextRequest): { user: AuthUse
 }
 
 export function getAuthCookieOptions() {
+  const appUrl = String(process.env.NEXT_PUBLIC_APP_URL || '').trim().toLowerCase();
+  const shouldUseSecureCookie = process.env.NODE_ENV === 'production' && appUrl.startsWith('https://');
+
   return {
     httpOnly: true,
     sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    secure: shouldUseSecureCookie,
     path: '/',
     // Cookie de session: supprimé automatiquement à la fermeture du navigateur.
   };
