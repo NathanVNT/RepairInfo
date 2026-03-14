@@ -58,8 +58,7 @@ export function MobileNav() {
     { href: '/reparations', label: 'Réparations', icon: Wrench },
     { href: '/stock', label: 'Stock', icon: Package },
     { href: '/clients', label: 'Clients', icon: Users },
-    { href: '/devis', label: 'Devis', icon: FileText },
-    { href: '/factures', label: 'Factures', icon: FileText },
+    { href: '/devis', label: 'Devis/Factures', icon: FileText },
     { href: '/dashboard', label: 'Tableau de bord', icon: BarChart3 },
   ];
 
