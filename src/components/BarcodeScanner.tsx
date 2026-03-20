@@ -195,29 +195,31 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
           />
 
           {isScanning ? (
-            <div className="absolute inset-0 pointer-events-none">
-              {/* Masque assombri */}
-              <div className="absolute inset-x-0 top-0 h-[33%] bg-black/45" />
-              <div className="absolute inset-x-0 bottom-0 h-[33%] bg-black/45" />
-              <div className="absolute left-0 top-[33%] bottom-[33%] w-[6%] bg-black/45" />
-              <div className="absolute right-0 top-[33%] bottom-[33%] w-[6%] bg-black/45" />
+            <>
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Masque assombri */}
+                <div className="absolute inset-x-0 top-0 h-[33%] bg-black/45" />
+                <div className="absolute inset-x-0 bottom-0 h-[33%] bg-black/45" />
+                <div className="absolute left-0 top-[33%] bottom-[33%] w-[6%] bg-black/45" />
+                <div className="absolute right-0 top-[33%] bottom-[33%] w-[6%] bg-black/45" />
 
-              {/* Cadre de visée */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] h-[34%] min-h-[128px] border-2 border-cyan-300 rounded-2xl shadow-[0_0_0_1px_rgba(34,211,238,0.35),0_0_28px_rgba(34,211,238,0.25)]">
-                <div className="absolute -top-0.5 -left-0.5 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-md"></div>
-                <div className="absolute -top-0.5 -right-0.5 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-md"></div>
-                <div className="absolute -bottom-0.5 -left-0.5 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-md"></div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-md"></div>
+                {/* Cadre de visée */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] h-[34%] min-h-[128px] border-2 border-cyan-300 rounded-2xl shadow-[0_0_0_1px_rgba(34,211,238,0.35),0_0_28px_rgba(34,211,238,0.25)]">
+                  <div className="absolute -top-0.5 -left-0.5 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-md"></div>
+                  <div className="absolute -top-0.5 -right-0.5 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-md"></div>
+                  <div className="absolute -bottom-0.5 -left-0.5 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-md"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-md"></div>
 
-                <div className="scanline absolute left-2 right-2 h-[3px] rounded-full bg-cyan-300/90 shadow-[0_0_18px_rgba(34,211,238,0.9)]"></div>
+                  <div className="scanline absolute left-2 right-2 h-[3px] rounded-full bg-cyan-300/90 shadow-[0_0_18px_rgba(34,211,238,0.9)]"></div>
+                </div>
               </div>
-            </div>
 
-            <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-              <p className="text-white text-sm bg-black/55 inline-block px-4 py-2 rounded-full border border-white/20">
-                Centrez le QR code ou le code-barres dans le cadre
-              </p>
-            </div>
+              <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                <p className="text-white text-sm bg-black/55 inline-block px-4 py-2 rounded-full border border-white/20">
+                  Centrez le QR code ou le code-barres dans le cadre
+                </p>
+              </div>
+            </>
           ) : null}
         </div>
 
@@ -302,6 +304,8 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
             )}
           </div>
         </form>
+      </div>
+
       </div>
 
       <style jsx>{`
