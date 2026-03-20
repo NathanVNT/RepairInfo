@@ -62,10 +62,18 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
         verbose: false,
         formatsToSupport: [
           Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.AZTEC,
+          Html5QrcodeSupportedFormats.DATA_MATRIX,
+          Html5QrcodeSupportedFormats.PDF_417,
           Html5QrcodeSupportedFormats.CODE_128,
           Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.CODE_93,
+          Html5QrcodeSupportedFormats.CODABAR,
+          Html5QrcodeSupportedFormats.ITF,
           Html5QrcodeSupportedFormats.EAN_13,
           Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
         ],
       });
       scannerRef.current = scanner;
@@ -73,8 +81,10 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
       await scanner.start(
         { facingMode: 'environment' },
         {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
+          fps: 12,
+          // Full-frame scan is more reliable for 1D barcodes on iPhone.
+          qrbox: undefined,
+          aspectRatio: isIOS ? 16 / 9 : 1,
         },
         async (decodedText: string) => {
           onScan(decodedText.trim());
@@ -94,7 +104,7 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
       if (errorMsg.includes('streaming') || errorMsg.includes('supported')) {
         setError(
           isIOS
-            ? 'Safari sur iPhone ne supporte pas bien le scanner. Utilisez la saisie manuelle ou ouvrez cette page dans une autre app.'
+            ? 'Le scan camera iPhone peut etre instable selon le navigateur. Essayez en HTTPS et utilisez la saisie manuelle si besoin.'
             : 'Votre navigateur ne supporte pas le scanner. Utilisez la saisie manuelle.'
         );
       } else if (errorMsg.includes('Permission') || errorMsg.includes('permission denied')) {
@@ -166,11 +176,12 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
         {isIOS && (
           <div className="w-full max-w-md mb-4 p-4 bg-blue-900 bg-opacity-50 text-blue-200 rounded-lg text-sm border border-blue-700">
             <p className="font-semibold mb-2">📱 Scanner sur iPhone</p>
-            <p className="mb-3">Safari a des limitations avec le scanner. Essayez:</p>
+            <p className="mb-3">Le scan fonctionne mieux avec un bon contraste et en HTTPS:</p>
             <ul className="text-xs space-y-1 mb-2">
               <li>✓ La <strong>saisie manuelle</strong> ci-dessous (recommandée)</li>
-              <li>✓ Ouvrir dans <strong>Chrome</strong> ou <strong>Firefox</strong> pour meilleure compatibilité</li>
-              <li>✓ Mettre en HTTPS si vous n'y êtes pas déjà</li>
+              <li>✓ Rapprocher puis eloigner legerement la camera pour faire la mise au point</li>
+              <li>✓ Bien centrer le code-barres ou le QR code dans la zone visible</li>
+              <li>✓ Utiliser HTTPS si possible</li>
             </ul>
           </div>
         )}
@@ -182,7 +193,7 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
           <div className="relative max-w-sm w-full">
             {/* Overlay de visée */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 border-4 border-primary-500 rounded-lg relative">
+              <div className="w-[88%] max-w-md h-40 border-4 border-primary-500 rounded-lg relative">
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white"></div>
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white"></div>
                 <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white"></div>
@@ -191,7 +202,7 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
             </div>
             <div className="absolute bottom-4 left-0 right-0 text-center">
               <p className="text-white text-sm bg-black bg-opacity-50 inline-block px-4 py-2 rounded">
-                Placez le code dans le cadre
+                Centrez le QR code ou le code-barres dans le cadre
               </p>
             </div>
           </div>

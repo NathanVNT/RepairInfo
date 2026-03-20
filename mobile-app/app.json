@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "RepairInfo Mobile",
+    "slug": "repairinfo-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "repairinfo",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "color": "#111827"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autoriser RepairInfo a utiliser la camera pour scanner les references."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.repairinfo.mobile",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "RepairInfo utilise les notifications pour le suivi des reparations."
+      }
+    },
+    "android": {
+      "package": "com.repairinfo.mobile",
+      "permissions": ["CAMERA", "POST_NOTIFICATIONS"]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}

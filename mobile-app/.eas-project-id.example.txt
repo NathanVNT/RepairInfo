@@ -1,0 +1,11 @@
+After running "eas init", copy your project ID into app.json:
+
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
