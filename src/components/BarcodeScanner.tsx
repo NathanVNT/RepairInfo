@@ -172,9 +172,9 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
       </div>
 
       {/* Scanner Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
         {/* Permission Info */}
-        {isIOS && (
+        {!isScanning && isIOS && (
           <div className="w-full max-w-md mb-4 p-4 bg-blue-900 bg-opacity-50 text-blue-200 rounded-lg text-sm border border-blue-700">
             <p className="font-semibold mb-2">📱 Scanner sur iPhone</p>
             <p className="mb-3">Le scan fonctionne mieux avec un bon contraste et en HTTPS:</p>
@@ -188,10 +188,10 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
         )}
 
         {/* Scanner container */}
-        <div className="relative max-w-sm w-full">
+        <div className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden bg-black">
           <div
             id={scannerRegionId.current}
-            className={`w-full rounded-2xl overflow-hidden bg-black ${isScanning ? 'aspect-square block' : 'hidden aspect-square'}`}
+            className={`scanner-host absolute inset-0 bg-black ${isScanning ? 'block' : 'hidden'}`}
           />
 
           {isScanning ? (
@@ -307,6 +307,25 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
       <style jsx>{`
         .scanline {
           animation: scanlineMove 2.2s ease-in-out infinite;
+        }
+
+        :global(.scanner-host > div) {
+          position: absolute !important;
+          inset: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+
+        :global(.scanner-host video),
+        :global(.scanner-host canvas) {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+        }
+
+        :global(.scanner-host [id*='qr-shaded-region']),
+        :global(.scanner-host [id*='qr-reader__dashboard']) {
+          display: none !important;
         }
 
         @keyframes scanlineMove {
