@@ -152,7 +152,8 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col">
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col">
       {/* Header */}
       <div className="bg-gray-900 text-white p-4 flex items-center justify-between border-b border-gray-800">
         <h2 className="text-lg font-semibold flex items-center">
@@ -186,28 +187,42 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
           </div>
         )}
 
-        {/* Scanner container - always in DOM */}
-        <div id={scannerRegionId.current} className={`max-w-sm w-full rounded-lg overflow-hidden bg-black ${isScanning ? 'aspect-square block' : 'hidden aspect-square'}`} />
+        {/* Scanner container */}
+        <div className="relative max-w-sm w-full">
+          <div
+            id={scannerRegionId.current}
+            className={`w-full rounded-2xl overflow-hidden bg-black ${isScanning ? 'aspect-square block' : 'hidden aspect-square'}`}
+          />
 
-        {isScanning ? (
-          <div className="relative max-w-sm w-full">
-            {/* Overlay de visée */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[88%] max-w-md h-40 border-4 border-primary-500 rounded-lg relative">
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white"></div>
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white"></div>
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white"></div>
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white"></div>
+          {isScanning ? (
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Masque assombri */}
+              <div className="absolute inset-x-0 top-0 h-[33%] bg-black/45" />
+              <div className="absolute inset-x-0 bottom-0 h-[33%] bg-black/45" />
+              <div className="absolute left-0 top-[33%] bottom-[33%] w-[6%] bg-black/45" />
+              <div className="absolute right-0 top-[33%] bottom-[33%] w-[6%] bg-black/45" />
+
+              {/* Cadre de visée */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] h-[34%] min-h-[128px] border-2 border-cyan-300 rounded-2xl shadow-[0_0_0_1px_rgba(34,211,238,0.35),0_0_28px_rgba(34,211,238,0.25)]">
+                <div className="absolute -top-0.5 -left-0.5 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-md"></div>
+                <div className="absolute -top-0.5 -right-0.5 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-md"></div>
+                <div className="absolute -bottom-0.5 -left-0.5 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-md"></div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-md"></div>
+
+                <div className="scanline absolute left-2 right-2 h-[3px] rounded-full bg-cyan-300/90 shadow-[0_0_18px_rgba(34,211,238,0.9)]"></div>
               </div>
             </div>
-            <div className="absolute bottom-4 left-0 right-0 text-center">
-              <p className="text-white text-sm bg-black bg-opacity-50 inline-block px-4 py-2 rounded">
+
+            <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+              <p className="text-white text-sm bg-black/55 inline-block px-4 py-2 rounded-full border border-white/20">
                 Centrez le QR code ou le code-barres dans le cadre
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="text-center max-w-md w-full">
+          ) : null}
+        </div>
+
+        {!isScanning ? (
+          <div className="text-center max-w-md w-full mt-6">
             <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-800 rounded-full mb-6">
               <Camera className="h-12 w-12 text-gray-400" />
             </div>
@@ -224,7 +239,7 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
               Utilisez votre caméra pour scanner un code
             </p>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Manual Input - Always visible */}
@@ -288,7 +303,28 @@ export function BarcodeScanner({ onScan, onClose, title = 'Scanner un code' }: B
           </div>
         </form>
       </div>
-    </div>
+
+      <style jsx>{`
+        .scanline {
+          animation: scanlineMove 2.2s ease-in-out infinite;
+        }
+
+        @keyframes scanlineMove {
+          0% {
+            top: 10%;
+            opacity: 0.65;
+          }
+          50% {
+            top: calc(100% - 10%);
+            opacity: 1;
+          }
+          100% {
+            top: 10%;
+            opacity: 0.65;
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
